@@ -43,6 +43,11 @@ class _VenuesView extends StatelessWidget {
         title: Text('Venues · ${session.userName ?? ''}'),
         actions: [
           IconButton(
+            icon: const Icon(Icons.event_note),
+            onPressed: () => context.router.push(const MyBookingsRoute()),
+            tooltip: 'My bookings',
+          ),
+          IconButton(
             icon: const Icon(Icons.logout),
             onPressed: () => _logout(context),
             tooltip: 'Switch user',
