@@ -32,7 +32,7 @@ class _VenuesView extends StatelessWidget {
   }
 
   void _openVenue(BuildContext context, Venue venue) {
-    context.router.push(VenueDetailRoute(venueId: venue.id));
+    context.router.push(VenueDetailRoute(venue: venue));
   }
 
   @override

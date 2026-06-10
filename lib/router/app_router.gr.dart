@@ -47,11 +47,11 @@ class MyBookingsRoute extends PageRouteInfo<void> {
 class VenueDetailRoute extends PageRouteInfo<VenueDetailRouteArgs> {
   VenueDetailRoute({
     Key? key,
-    required String venueId,
+    required Venue venue,
     List<PageRouteInfo>? children,
   }) : super(
          VenueDetailRoute.name,
-         args: VenueDetailRouteArgs(key: key, venueId: venueId),
+         args: VenueDetailRouteArgs(key: key, venue: venue),
          initialChildren: children,
        );
 
@@ -61,21 +61,21 @@ class VenueDetailRoute extends PageRouteInfo<VenueDetailRouteArgs> {
     name,
     builder: (data) {
       final args = data.argsAs<VenueDetailRouteArgs>();
-      return VenueDetailPage(key: args.key, venueId: args.venueId);
+      return VenueDetailPage(key: args.key, venue: args.venue);
     },
   );
 }
 
 class VenueDetailRouteArgs {
-  const VenueDetailRouteArgs({this.key, required this.venueId});
+  const VenueDetailRouteArgs({this.key, required this.venue});
 
   final Key? key;
 
-  final String venueId;
+  final Venue venue;
 
   @override
   String toString() {
-    return 'VenueDetailRouteArgs{key: $key, venueId: $venueId}';
+    return 'VenueDetailRouteArgs{key: $key, venue: $venue}';
   }
 }
 
