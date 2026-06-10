@@ -14,6 +14,7 @@ void setupCubitLocator(GetIt getIt) {
       (venue, _) => VenueDetailCubit(
         venue: venue,
         venuesRepository: getIt(),
+        eventsService: getIt(),
       ),
     )
     ..registerFactory<CreateBookingCubit>(

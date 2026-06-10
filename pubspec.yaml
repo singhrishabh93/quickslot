@@ -36,6 +36,9 @@ dependencies:
   google_fonts: ^6.2.1
   shimmer: ^3.0.0
 
+  # Realtime
+  supabase_flutter: ^2.8.0
+
 dev_dependencies:
   flutter_test:
     sdk: flutter

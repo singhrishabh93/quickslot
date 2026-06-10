@@ -34,6 +34,21 @@ class Slot extends Equatable {
     return '$start:00 – $end:00';
   }
 
+  Slot copyWith({
+    bool? isBooked,
+    String? bookingId,
+    bool clearBookingId = false,
+  }) {
+    return Slot(
+      venueId: venueId,
+      hour: hour,
+      slotStartUtc: slotStartUtc,
+      slotEndUtc: slotEndUtc,
+      isBooked: isBooked ?? this.isBooked,
+      bookingId: clearBookingId ? null : (bookingId ?? this.bookingId),
+    );
+  }
+
   @override
   List<Object?> get props =>
       [venueId, hour, slotStartUtc, slotEndUtc, isBooked, bookingId];
