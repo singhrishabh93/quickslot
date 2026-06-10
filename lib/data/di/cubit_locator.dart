@@ -1,5 +1,8 @@
 import 'package:get_it/get_it.dart';
+import 'package:swades_hackathon_app/modules/venues/cubit/venues_list_cubit.dart';
 
-// Cubits are registered here as we add them per feature.
-// For Feature 5 (bootstrap) the locator is empty; Feature 6 adds LoginCubit.
-void setupCubitLocator(GetIt getIt) {}
+void setupCubitLocator(GetIt getIt) {
+  getIt.registerFactory<VenuesListCubit>(
+    () => VenuesListCubit(venuesRepository: getIt()),
+  );
+}
