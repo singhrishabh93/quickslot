@@ -1,6 +1,9 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:swades_hackathon_app/app/theme/app_theme.dart';
+import 'package:swades_hackathon_app/app/widgets/empty_view.dart';
+import 'package:swades_hackathon_app/app/widgets/skeleton.dart';
 import 'package:swades_hackathon_app/data/di/service_locator.dart';
 import 'package:swades_hackathon_app/data/models/booking.dart';
 import 'package:swades_hackathon_app/modules/bookings/cubit/my_bookings_cubit.dart';
@@ -27,18 +30,18 @@ class _MyBookingsView extends StatelessWidget {
     final result = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Cancel booking?'),
+        title: const Text('CANCEL BOOKING?'),
         content: const Text(
-          'This will free the slot for someone else to book.',
+          'This frees the slot for someone else to book.',
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(false),
-            child: const Text('Keep'),
+            child: const Text('KEEP'),
           ),
           FilledButton(
             onPressed: () => Navigator.of(ctx).pop(true),
-            child: const Text('Cancel booking'),
+            child: const Text('CANCEL'),
           ),
         ],
       ),
@@ -57,101 +60,130 @@ class _MyBookingsView extends StatelessWidget {
     messenger.showSnackBar(
       SnackBar(
         content: Text(
-          ok ? 'Booking cancelled' : 'Cancel failed. Please try again.',
+          ok ? 'Booking cancelled.' : 'Cancel failed. Try again.',
         ),
       ),
     );
   }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('My Bookings')),
-      body: BlocBuilder<MyBookingsCubit, MyBookingsState>(
-        builder: (context, state) {
-          return switch (state.status) {
-            MyBookingsStatus.initial || MyBookingsStatus.loading =>
-              const Center(child: CircularProgressIndicator()),
-            MyBookingsStatus.success => state.bookings.isEmpty
-                ? const _EmptyState()
-                : RefreshIndicator(
-                    onRefresh: context.read<MyBookingsCubit>().refresh,
-                    child: ListView.separated(
-                      padding: const EdgeInsets.all(16),
-                      itemCount: state.bookings.length,
-                      separatorBuilder: (_, _) => const SizedBox(height: 12),
-                      itemBuilder: (_, i) {
-                        final b = state.bookings[i];
-                        return BookingTile(
-                          booking: b,
-                          isCancelling: state.cancellingId == b.id,
-                          onCancel: () => _onCancel(context, b),
-                        );
-                      },
-                    ),
-                  ),
-            MyBookingsStatus.error => _ErrorView(
-                message: state.failure?.message ?? 'Failed to load bookings',
-                onRetry: context.read<MyBookingsCubit>().refresh,
-              ),
-          };
-        },
-      ),
-    );
-  }
-}
-
-class _EmptyState extends StatelessWidget {
-  const _EmptyState();
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(
-              Icons.event_busy,
-              size: 48,
-              color: theme.colorScheme.onSurfaceVariant,
+    return Scaffold(
+      appBar: AppBar(title: const Text('MY BOOKINGS')),
+      body: BlocBuilder<MyBookingsCubit, MyBookingsState>(
+        builder: (context, state) {
+          return RefreshIndicator(
+            color: AppColors.ink,
+            backgroundColor: AppColors.cream,
+            onRefresh: context.read<MyBookingsCubit>().refresh,
+            child: CustomScrollView(
+              slivers: [
+                SliverPadding(
+                  padding: const EdgeInsets.fromLTRB(20, 0, 20, 16),
+                  sliver: SliverToBoxAdapter(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'YOUR SCHEDULE',
+                          style: theme.textTheme.labelMedium,
+                        ),
+                        const SizedBox(height: 6),
+                        Text(
+                          _countLine(state),
+                          style: theme.textTheme.displaySmall?.copyWith(
+                            fontSize: 40,
+                            height: 1,
+                          ),
+                        ),
+                        const SizedBox(height: 24),
+                      ],
+                    ),
+                  ),
+                ),
+                _buildBody(context, state),
+                const SliverToBoxAdapter(child: SizedBox(height: 32)),
+              ],
             ),
-            const SizedBox(height: 12),
-            Text('No bookings yet', style: theme.textTheme.titleMedium),
-            const SizedBox(height: 4),
-            Text(
-              'Bookings you make will show up here.',
-              style: theme.textTheme.bodyMedium?.copyWith(
-                color: theme.colorScheme.onSurfaceVariant,
-              ),
-            ),
-          ],
-        ),
+          );
+        },
       ),
     );
   }
+
+  String _countLine(MyBookingsState state) {
+    if (state.status != MyBookingsStatus.success) return '—';
+    final confirmed = state.bookings
+        .where((b) => b.status == BookingStatus.confirmed)
+        .length;
+    return '$confirmed ACTIVE';
+  }
+
+  Widget _buildBody(BuildContext context, MyBookingsState state) {
+    return switch (state.status) {
+      MyBookingsStatus.initial || MyBookingsStatus.loading => SliverPadding(
+          padding: const EdgeInsets.symmetric(horizontal: 20),
+          sliver: SliverList.separated(
+            itemCount: 3,
+            separatorBuilder: (_, _) => const SizedBox(height: 12),
+            itemBuilder: (_, _) => const _BookingSkeleton(),
+          ),
+        ),
+      MyBookingsStatus.success => state.bookings.isEmpty
+          ? const SliverToBoxAdapter(
+              child: EmptyView(
+                numeral: '00',
+                label: 'Nothing booked',
+                caption: 'Pick a slot from any venue to fill this page.',
+              ),
+            )
+          : SliverPadding(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              sliver: SliverList.separated(
+                itemCount: state.bookings.length,
+                separatorBuilder: (_, _) => const SizedBox(height: 12),
+                itemBuilder: (_, i) {
+                  final b = state.bookings[i];
+                  return BookingTile(
+                    booking: b,
+                    isCancelling: state.cancellingId == b.id,
+                    onCancel: () => _onCancel(context, b),
+                  );
+                },
+              ),
+            ),
+      MyBookingsStatus.error => SliverToBoxAdapter(
+          child: ErrorView(
+            message: state.failure?.message ?? 'Failed to load bookings',
+            onRetry: context.read<MyBookingsCubit>().refresh,
+          ),
+        ),
+    };
+  }
 }
 
-class _ErrorView extends StatelessWidget {
-  const _ErrorView({required this.message, required this.onRetry});
-  final String message;
-  final Future<void> Function() onRetry;
+class _BookingSkeleton extends StatelessWidget {
+  const _BookingSkeleton();
 
   @override
   Widget build(BuildContext context) {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(24),
+    return ShimmerScope(
+      child: Container(
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: AppColors.paper,
+          border: Border.all(color: AppColors.border),
+          borderRadius: BorderRadius.circular(4),
+        ),
         child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Icon(Icons.error_outline, size: 48),
-            const SizedBox(height: 12),
-            Text(message, textAlign: TextAlign.center),
-            const SizedBox(height: 16),
-            FilledButton(onPressed: onRetry, child: const Text('Retry')),
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: const [
+            Skeleton(width: 100, height: 10),
+            SizedBox(height: 12),
+            Skeleton(width: 220, height: 26),
+            SizedBox(height: 24),
+            Skeleton(width: double.infinity, height: 48),
           ],
         ),
       ),

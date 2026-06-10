@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:swades_hackathon_app/app/theme/app_theme.dart';
 import 'package:swades_hackathon_app/data/models/venue.dart';
 
 class VenueCard extends StatelessWidget {
@@ -14,67 +15,107 @@ class VenueCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    return Card(
+    final sportLabel = switch (venue.sport) {
+      Sport.badminton => 'BADMINTON',
+      Sport.turf => 'TURF',
+      Sport.unknown => 'VENUE',
+    };
+
+    return Material(
+      color: AppColors.paper,
+      shape: const RoundedRectangleBorder(
+        side: BorderSide(color: AppColors.border),
+        borderRadius: BorderRadius.all(Radius.circular(4)),
+      ),
       child: InkWell(
         onTap: onTap,
         child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Row(
+          padding: const EdgeInsets.fromLTRB(20, 20, 20, 20),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _SportBadge(sport: venue.sport),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(venue.name, style: theme.textTheme.titleMedium),
-                    const SizedBox(height: 4),
-                    Text(
-                      venue.location,
-                      style: theme.textTheme.bodySmall?.copyWith(
-                        color: theme.colorScheme.onSurfaceVariant,
-                      ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    sportLabel,
+                    style: theme.textTheme.labelMedium?.copyWith(
+                      color: AppColors.courtGreen,
                     ),
-                    const SizedBox(height: 8),
-                    Text(
-                      '₹${venue.pricePerHour}/hr',
-                      style: theme.textTheme.titleSmall?.copyWith(
-                        color: theme.colorScheme.primary,
-                        fontWeight: FontWeight.w600,
-                      ),
+                  ),
+                  Text(
+                    '${venue.opensAtHour.toString().padLeft(2, '0')}–${venue.closesAtHour.toString().padLeft(2, '0')}',
+                    style: AppTheme.mono(
+                      context,
+                      fontSize: 11,
+                      color: AppColors.subtle,
+                      letterSpacing: 1,
                     ),
-                  ],
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
+              Text(
+                venue.name,
+                style: theme.textTheme.headlineSmall?.copyWith(
+                  height: 1.0,
+                  letterSpacing: 0.5,
                 ),
               ),
-              const Icon(Icons.chevron_right),
+              const SizedBox(height: 8),
+              Text(
+                venue.location,
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  color: AppColors.subtle,
+                ),
+              ),
+              const SizedBox(height: 20),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  RichText(
+                    text: TextSpan(
+                      style: AppTheme.mono(
+                        context,
+                        fontSize: 20,
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.ink,
+                      ),
+                      children: [
+                        const TextSpan(text: '₹'),
+                        TextSpan(text: venue.pricePerHour.toString()),
+                        TextSpan(
+                          text: ' /HR',
+                          style: AppTheme.mono(
+                            context,
+                            fontSize: 11,
+                            color: AppColors.subtle,
+                            letterSpacing: 1.5,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                    decoration: const BoxDecoration(
+                      color: AppColors.ink,
+                    ),
+                    child: Text(
+                      'BOOK →',
+                      style: theme.textTheme.labelSmall?.copyWith(
+                        color: AppColors.cream,
+                        letterSpacing: 1.5,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ],
           ),
         ),
       ),
-    );
-  }
-}
-
-class _SportBadge extends StatelessWidget {
-  const _SportBadge({required this.sport});
-  final Sport sport;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final (icon, label) = switch (sport) {
-      Sport.badminton => (Icons.sports_tennis, 'Badminton'),
-      Sport.turf => (Icons.sports_soccer, 'Turf'),
-      Sport.unknown => (Icons.place, '—'),
-    };
-    return Container(
-      width: 56,
-      height: 56,
-      decoration: BoxDecoration(
-        color: theme.colorScheme.primaryContainer,
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Icon(icon, color: theme.colorScheme.onPrimaryContainer, size: 28),
     );
   }
 }

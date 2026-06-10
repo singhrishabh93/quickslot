@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:swades_hackathon_app/app/theme/app_theme.dart';
 import 'package:swades_hackathon_app/data/models/booking.dart';
 import 'package:swades_hackathon_app/data/models/venue.dart';
 
@@ -18,79 +19,130 @@ class BookingTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final venueName = booking.venue?.name ?? 'Unknown venue';
-    final local = booking.slotStartUtc.toLocal();
-    final dateLabel = DateFormat('EEE, d MMM').format(local);
-    final timeLabel =
-        '${DateFormat('HH:mm').format(local)} – ${DateFormat('HH:mm').format(local.add(const Duration(hours: 1)))}';
-    final isCancelled = booking.status == BookingStatus.cancelled;
     final venue = booking.venue;
+    final venueName = venue?.name ?? 'Unknown venue';
+    final sportLabel = switch (venue?.sport ?? Sport.unknown) {
+      Sport.badminton => 'BADMINTON',
+      Sport.turf => 'TURF',
+      Sport.unknown => 'VENUE',
+    };
+    final local = booking.slotStartUtc.toLocal();
+    final isCancelled = booking.status == BookingStatus.cancelled;
+    final statusLabel = isCancelled ? 'CANCELLED' : 'CONFIRMED';
+    final statusColor = isCancelled ? AppColors.clay : AppColors.courtGreen;
+    final dateStr = DateFormat('d MMM').format(local).toUpperCase();
+    final dayStr = DateFormat('EEE').format(local).toUpperCase();
+    final timeStr =
+        '${DateFormat('HH:mm').format(local)} → ${DateFormat('HH:mm').format(local.add(const Duration(hours: 1)))}';
 
-    return Card(
+    return Material(
+      color: AppColors.paper,
+      shape: const RoundedRectangleBorder(
+        side: BorderSide(color: AppColors.border),
+        borderRadius: BorderRadius.all(Radius.circular(4)),
+      ),
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.fromLTRB(20, 18, 20, 18),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                _SportIcon(sport: venue?.sport ?? Sport.unknown),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        venueName,
-                        style: theme.textTheme.titleMedium?.copyWith(
-                          decoration: isCancelled
-                              ? TextDecoration.lineThrough
-                              : null,
-                        ),
-                      ),
-                      if (venue != null) ...[
-                        const SizedBox(height: 2),
+                Text(
+                  sportLabel,
+                  style: theme.textTheme.labelMedium?.copyWith(
+                    color: AppColors.courtGreen,
+                  ),
+                ),
+                _StatusPill(label: statusLabel, color: statusColor),
+              ],
+            ),
+            const SizedBox(height: 8),
+            Text(
+              venueName,
+              style: theme.textTheme.headlineSmall?.copyWith(
+                height: 1.0,
+                color: isCancelled ? AppColors.subtle : AppColors.ink,
+                decoration: isCancelled ? TextDecoration.lineThrough : null,
+                decorationColor: AppColors.subtle,
+              ),
+            ),
+            if (venue != null) ...[
+              const SizedBox(height: 4),
+              Text(
+                venue.location,
+                style: theme.textTheme.bodySmall,
+              ),
+            ],
+            const SizedBox(height: 18),
+            Container(
+              padding: const EdgeInsets.symmetric(vertical: 14),
+              decoration: const BoxDecoration(
+                border: Border(
+                  top: BorderSide(color: AppColors.border, width: 1),
+                  bottom: BorderSide(color: AppColors.border, width: 1),
+                ),
+              ),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text('DATE', style: theme.textTheme.labelSmall),
+                        const SizedBox(height: 4),
                         Text(
-                          venue.location,
-                          style: theme.textTheme.bodySmall?.copyWith(
-                            color: theme.colorScheme.onSurfaceVariant,
+                          '$dayStr · $dateStr',
+                          style: AppTheme.mono(
+                            context,
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                            color: AppColors.ink,
                           ),
                         ),
                       ],
-                    ],
+                    ),
                   ),
-                ),
-                _StatusPill(status: booking.status),
-              ],
-            ),
-            const SizedBox(height: 12),
-            Row(
-              children: [
-                Icon(Icons.event, size: 16,
-                    color: theme.colorScheme.onSurfaceVariant),
-                const SizedBox(width: 6),
-                Text(dateLabel, style: theme.textTheme.bodyMedium),
-                const SizedBox(width: 16),
-                Icon(Icons.schedule, size: 16,
-                    color: theme.colorScheme.onSurfaceVariant),
-                const SizedBox(width: 6),
-                Text(timeLabel, style: theme.textTheme.bodyMedium),
-              ],
+                  Container(width: 1, height: 32, color: AppColors.border),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text('TIME', style: theme.textTheme.labelSmall),
+                        const SizedBox(height: 4),
+                        Text(
+                          timeStr,
+                          style: AppTheme.mono(
+                            context,
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                            color: AppColors.ink,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
             ),
             if (!isCancelled) ...[
-              const SizedBox(height: 12),
+              const SizedBox(height: 16),
               SizedBox(
                 width: double.infinity,
-                child: OutlinedButton.icon(
+                child: OutlinedButton(
                   onPressed: isCancelling ? null : onCancel,
-                  icon: isCancelling
+                  child: isCancelling
                       ? const SizedBox(
                           width: 16,
                           height: 16,
-                          child: CircularProgressIndicator(strokeWidth: 2),
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: AppColors.ink,
+                          ),
                         )
-                      : const Icon(Icons.cancel_outlined, size: 18),
-                  label: Text(isCancelling ? 'Cancelling…' : 'Cancel booking'),
+                      : const Text('CANCEL BOOKING'),
                 ),
               ),
             ],
@@ -101,66 +153,25 @@ class BookingTile extends StatelessWidget {
   }
 }
 
-class _SportIcon extends StatelessWidget {
-  const _SportIcon({required this.sport});
-  final Sport sport;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final icon = switch (sport) {
-      Sport.badminton => Icons.sports_tennis,
-      Sport.turf => Icons.sports_soccer,
-      Sport.unknown => Icons.place,
-    };
-    return Container(
-      width: 44,
-      height: 44,
-      decoration: BoxDecoration(
-        color: theme.colorScheme.primaryContainer,
-        borderRadius: BorderRadius.circular(10),
-      ),
-      child: Icon(icon, color: theme.colorScheme.onPrimaryContainer),
-    );
-  }
-}
-
 class _StatusPill extends StatelessWidget {
-  const _StatusPill({required this.status});
-  final BookingStatus status;
+  const _StatusPill({required this.label, required this.color});
+  final String label;
+  final Color color;
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final (label, bg, fg) = switch (status) {
-      BookingStatus.confirmed => (
-          'Confirmed',
-          theme.colorScheme.primaryContainer,
-          theme.colorScheme.onPrimaryContainer,
-        ),
-      BookingStatus.cancelled => (
-          'Cancelled',
-          theme.colorScheme.surfaceContainerHighest,
-          theme.colorScheme.onSurfaceVariant,
-        ),
-      BookingStatus.unknown => (
-          '—',
-          theme.colorScheme.surfaceContainerHighest,
-          theme.colorScheme.onSurfaceVariant,
-        ),
-    };
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
-        color: bg,
-        borderRadius: BorderRadius.circular(999),
+        border: Border.all(color: color, width: 1),
+        borderRadius: BorderRadius.circular(2),
       ),
       child: Text(
         label,
-        style: theme.textTheme.labelSmall?.copyWith(
-          color: fg,
-          fontWeight: FontWeight.w600,
-        ),
+        style: Theme.of(context).textTheme.labelSmall?.copyWith(
+              color: color,
+              letterSpacing: 1.5,
+            ),
       ),
     );
   }

@@ -1,6 +1,9 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:swades_hackathon_app/app/theme/app_theme.dart';
+import 'package:swades_hackathon_app/app/widgets/empty_view.dart';
+import 'package:swades_hackathon_app/app/widgets/skeleton.dart';
 import 'package:swades_hackathon_app/data/di/service_locator.dart';
 import 'package:swades_hackathon_app/data/models/slot.dart';
 import 'package:swades_hackathon_app/data/models/venue.dart';
@@ -38,7 +41,7 @@ class _VenueDetailView extends StatelessWidget {
     final result = await showModalBottomSheet<BookingSheetResult>(
       context: context,
       isScrollControlled: true,
-      showDragHandle: true,
+      backgroundColor: AppColors.cream,
       builder: (_) => ConfirmBookingSheet(venue: venue, slot: slot),
     );
 
@@ -48,13 +51,13 @@ class _VenueDetailView extends StatelessWidget {
     switch (result) {
       case BookingSheetResult.success:
         messenger.showSnackBar(
-          const SnackBar(content: Text('Booking confirmed')),
+          const SnackBar(content: Text('Booking confirmed.')),
         );
         await detailCubit.refresh();
       case BookingSheetResult.slotTaken:
         messenger.showSnackBar(
           const SnackBar(
-            content: Text('This slot was just taken by someone else.'),
+            content: Text('Slot was just taken by someone else.'),
           ),
         );
         await detailCubit.refresh();
@@ -71,11 +74,13 @@ class _VenueDetailView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text(venue.name)),
+      appBar: AppBar(title: const Text('SLOTS')),
       body: BlocBuilder<VenueDetailCubit, VenueDetailState>(
         builder: (context, state) {
           final cubit = context.read<VenueDetailCubit>();
           return RefreshIndicator(
+            color: AppColors.ink,
+            backgroundColor: AppColors.cream,
             onRefresh: cubit.refresh,
             child: CustomScrollView(
               slivers: [
@@ -90,7 +95,7 @@ class _VenueDetailView extends StatelessWidget {
                   ),
                 ),
                 SliverPadding(
-                  padding: const EdgeInsets.all(16),
+                  padding: const EdgeInsets.fromLTRB(20, 16, 20, 32),
                   sliver: SliverToBoxAdapter(
                     child: _SlotsArea(state: state, onTap: _onSlotTap),
                   ),
@@ -113,17 +118,18 @@ class _SlotsArea extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return switch (state.status) {
-      SlotsStatus.initial || SlotsStatus.loading => const Padding(
-          padding: EdgeInsets.only(top: 48),
-          child: Center(child: CircularProgressIndicator()),
-        ),
+      SlotsStatus.initial || SlotsStatus.loading => const _SlotGridSkeleton(),
       SlotsStatus.success => state.slots.isEmpty
-          ? const _EmptyState()
+          ? const EmptyView(
+              numeral: '00',
+              label: 'No slots',
+              caption: 'No hours available for this date.',
+            )
           : SlotGrid(
               slots: state.slots,
               onSlotTap: (slot) => onTap(context, slot),
             ),
-      SlotsStatus.error => _ErrorView(
+      SlotsStatus.error => ErrorView(
           message: state.failure?.message ?? 'Failed to load slots',
           onRetry: context.read<VenueDetailCubit>().refresh,
         ),
@@ -131,35 +137,29 @@ class _SlotsArea extends StatelessWidget {
   }
 }
 
-class _EmptyState extends StatelessWidget {
-  const _EmptyState();
+class _SlotGridSkeleton extends StatelessWidget {
+  const _SlotGridSkeleton();
 
   @override
   Widget build(BuildContext context) {
-    return const Padding(
-      padding: EdgeInsets.only(top: 48),
-      child: Center(child: Text('No slots for this date.')),
-    );
-  }
-}
-
-class _ErrorView extends StatelessWidget {
-  const _ErrorView({required this.message, required this.onRetry});
-  final String message;
-  final Future<void> Function() onRetry;
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 48, horizontal: 24),
-      child: Column(
-        children: [
-          const Icon(Icons.error_outline, size: 48),
-          const SizedBox(height: 12),
-          Text(message, textAlign: TextAlign.center),
-          const SizedBox(height: 16),
-          FilledButton(onPressed: onRetry, child: const Text('Retry')),
-        ],
+    return ShimmerScope(
+      child: GridView.builder(
+        shrinkWrap: true,
+        physics: const NeverScrollableScrollPhysics(),
+        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: 2,
+          mainAxisSpacing: 10,
+          crossAxisSpacing: 10,
+          childAspectRatio: 1.35,
+        ),
+        itemCount: 8,
+        itemBuilder: (_, _) => Container(
+          decoration: BoxDecoration(
+            color: AppColors.surfaceMuted,
+            border: Border.all(color: AppColors.border),
+            borderRadius: BorderRadius.circular(4),
+          ),
+        ),
       ),
     );
   }
@@ -170,9 +170,9 @@ class _DateChipsDelegate extends SliverPersistentHeaderDelegate {
   final Widget child;
 
   @override
-  double get minExtent => 92;
+  double get minExtent => 96;
   @override
-  double get maxExtent => 92;
+  double get maxExtent => 96;
 
   @override
   Widget build(BuildContext context, double shrinkOffset, bool overlapsContent) {

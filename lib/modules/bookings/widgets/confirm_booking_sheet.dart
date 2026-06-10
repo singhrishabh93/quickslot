@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
+import 'package:swades_hackathon_app/app/theme/app_theme.dart';
 import 'package:swades_hackathon_app/data/di/service_locator.dart';
 import 'package:swades_hackathon_app/data/models/slot.dart';
 import 'package:swades_hackathon_app/data/models/venue.dart';
@@ -53,8 +54,10 @@ class _SheetBody extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final dateLabel =
-        DateFormat('EEE, d MMM').format(slot.slotStartUtc.toLocal());
+    final local = slot.slotStartUtc.toLocal();
+    final dateLabel = DateFormat('EEE, d MMM').format(local).toUpperCase();
+    final timeLabel =
+        '${DateFormat('HH:mm').format(local)} → ${DateFormat('HH:mm').format(local.add(const Duration(hours: 1)))}';
 
     return BlocConsumer<CreateBookingCubit, CreateBookingState>(
       listener: _onConfirmStateChange,
@@ -71,13 +74,45 @@ class _SheetBody extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('Confirm booking', style: theme.textTheme.titleLarge),
-              const SizedBox(height: 16),
-              _Row(label: 'Venue', value: venue.name),
-              _Row(label: 'Date', value: dateLabel),
-              _Row(label: 'Time', value: slot.displayRange),
-              _Row(label: 'Price', value: '₹${venue.pricePerHour}'),
-              const SizedBox(height: 24),
+              Text(
+                'CONFIRM',
+                style: theme.textTheme.labelMedium?.copyWith(
+                  color: AppColors.courtGreen,
+                ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                'BOOK THIS SLOT',
+                style: theme.textTheme.displaySmall?.copyWith(
+                  fontSize: 40,
+                  height: 1,
+                ),
+              ),
+              const SizedBox(height: 20),
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: AppColors.paper,
+                  border: Border.all(color: AppColors.border),
+                  borderRadius: BorderRadius.circular(4),
+                ),
+                child: Column(
+                  children: [
+                    _Row(label: 'VENUE', value: venue.name.toUpperCase()),
+                    const Divider(height: 18),
+                    _Row(label: 'DATE', value: dateLabel),
+                    const Divider(height: 18),
+                    _Row(label: 'TIME', value: timeLabel, mono: true),
+                    const Divider(height: 18),
+                    _Row(
+                      label: 'PRICE',
+                      value: '₹${venue.pricePerHour}',
+                      mono: true,
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 20),
               FilledButton(
                 onPressed: isSubmitting
                     ? null
@@ -87,19 +122,22 @@ class _SheetBody extends StatelessWidget {
                         ),
                 child: isSubmitting
                     ? const SizedBox(
-                        width: 24,
-                        height: 24,
-                        child: CircularProgressIndicator(strokeWidth: 2.5),
+                        width: 22,
+                        height: 22,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2.5,
+                          color: AppColors.cream,
+                        ),
                       )
-                    : const Text('Confirm'),
+                    : const Text('CONFIRM BOOKING'),
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: 6),
               TextButton(
                 onPressed: isSubmitting
                     ? null
                     : () => Navigator.of(context)
                         .pop(BookingSheetResult.cancelled),
-                child: const Text('Cancel'),
+                child: const Text('CANCEL'),
               ),
             ],
           ),
@@ -110,31 +148,39 @@ class _SheetBody extends StatelessWidget {
 }
 
 class _Row extends StatelessWidget {
-  const _Row({required this.label, required this.value});
+  const _Row({
+    required this.label,
+    required this.value,
+    this.mono = false,
+  });
+
   final String label;
   final String value;
+  final bool mono;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 6),
-      child: Row(
-        children: [
-          SizedBox(
-            width: 72,
-            child: Text(
-              label,
-              style: theme.textTheme.bodyMedium?.copyWith(
-                color: theme.colorScheme.onSurfaceVariant,
-              ),
-            ),
+    return Row(
+      children: [
+        SizedBox(
+          width: 64,
+          child: Text(label, style: theme.textTheme.labelSmall),
+        ),
+        Expanded(
+          child: Text(
+            value,
+            style: mono
+                ? AppTheme.mono(
+                    context,
+                    fontSize: 15,
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.ink,
+                  )
+                : theme.textTheme.titleSmall,
           ),
-          Expanded(
-            child: Text(value, style: theme.textTheme.titleSmall),
-          ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 }

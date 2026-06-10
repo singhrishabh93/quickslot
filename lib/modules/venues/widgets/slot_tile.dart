@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:swades_hackathon_app/app/theme/app_theme.dart';
 import 'package:swades_hackathon_app/data/models/slot.dart';
 
 class SlotTile extends StatelessWidget {
@@ -16,36 +17,66 @@ class SlotTile extends StatelessWidget {
     final theme = Theme.of(context);
     final isBooked = slot.isBooked;
 
-    final bg = isBooked
-        ? theme.colorScheme.surfaceContainerHighest
-        : theme.colorScheme.primaryContainer;
-    final fg = isBooked
-        ? theme.colorScheme.onSurfaceVariant
-        : theme.colorScheme.onPrimaryContainer;
+    final borderColor = isBooked ? AppColors.border : AppColors.ink;
+    final bg = isBooked ? AppColors.surfaceMuted : AppColors.paper;
+    final fg = isBooked ? AppColors.subtle : AppColors.ink;
+    final statusLabel = isBooked ? 'BOOKED' : 'OPEN';
+    final statusColor = isBooked ? AppColors.subtle : AppColors.courtGreen;
 
     return Material(
       color: bg,
-      borderRadius: BorderRadius.circular(12),
+      shape: RoundedRectangleBorder(
+        side: BorderSide(color: borderColor, width: isBooked ? 1 : 1.4),
+        borderRadius: const BorderRadius.all(Radius.circular(4)),
+      ),
       child: InkWell(
         onTap: isBooked ? null : onTap,
-        borderRadius: BorderRadius.circular(12),
         child: Padding(
-          padding: const EdgeInsets.all(12),
+          padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
           child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
+              Row(
+                children: [
+                  Text(
+                    statusLabel,
+                    style: theme.textTheme.labelSmall?.copyWith(
+                      color: statusColor,
+                      letterSpacing: 1.8,
+                    ),
+                  ),
+                  const Spacer(),
+                  if (!isBooked)
+                    Container(
+                      width: 6,
+                      height: 6,
+                      decoration: const BoxDecoration(
+                        color: AppColors.courtGreen,
+                        shape: BoxShape.circle,
+                      ),
+                    ),
+                ],
+              ),
+              const SizedBox(height: 6),
               Text(
-                slot.displayRange,
-                style: theme.textTheme.titleSmall?.copyWith(
+                slot.hour.toString().padLeft(2, '0'),
+                style: theme.textTheme.displaySmall?.copyWith(
                   color: fg,
-                  fontWeight: FontWeight.w600,
+                  fontSize: 40,
+                  height: 0.9,
+                  letterSpacing: 0,
                 ),
               ),
-              const SizedBox(height: 4),
+              const SizedBox(height: 2),
               Text(
-                isBooked ? 'Booked' : 'Available',
-                style: theme.textTheme.bodySmall?.copyWith(color: fg),
+                '${slot.hour.toString().padLeft(2, '0')}:00 → ${(slot.hour + 1).toString().padLeft(2, '0')}:00',
+                style: AppTheme.mono(
+                  context,
+                  fontSize: 10,
+                  color: AppColors.subtle,
+                  letterSpacing: 0.5,
+                ),
               ),
             ],
           ),
