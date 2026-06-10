@@ -12,6 +12,6 @@ void setupRepositoryLocator(GetIt getIt) {
       () => VenuesRepository(venuesApi: getIt()),
     )
     ..registerLazySingleton<BookingsRepository>(
-      () => BookingsRepository(bookingsApi: getIt()),
+      () => BookingsRepository(bookingsApi: getIt(), cache: getIt()),
     );
 }

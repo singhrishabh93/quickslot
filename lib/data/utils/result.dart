@@ -25,8 +25,10 @@ sealed class Result<T> {
 }
 
 class Success<T> extends Result<T> {
-  const Success(this.data);
+  const Success(this.data, {this.isFromCache = false, this.cacheStamp});
   final T data;
+  final bool isFromCache;
+  final DateTime? cacheStamp;
 }
 
 class FailureResult<T> extends Result<T> {

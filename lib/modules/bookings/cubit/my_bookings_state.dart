@@ -10,20 +10,27 @@ class MyBookingsState extends Equatable {
     this.status = MyBookingsStatus.initial,
     this.failure,
     this.cancellingId,
+    this.isFromCache = false,
+    this.cacheStamp,
   });
 
   final List<Booking> bookings;
   final MyBookingsStatus status;
   final Failure? failure;
   final String? cancellingId;
+  final bool isFromCache;
+  final DateTime? cacheStamp;
 
   MyBookingsState copyWith({
     List<Booking>? bookings,
     MyBookingsStatus? status,
     Failure? failure,
     String? cancellingId,
+    bool? isFromCache,
+    DateTime? cacheStamp,
     bool clearFailure = false,
     bool clearCancellingId = false,
+    bool clearCacheStamp = false,
   }) {
     return MyBookingsState(
       bookings: bookings ?? this.bookings,
@@ -31,9 +38,18 @@ class MyBookingsState extends Equatable {
       failure: clearFailure ? null : (failure ?? this.failure),
       cancellingId:
           clearCancellingId ? null : (cancellingId ?? this.cancellingId),
+      isFromCache: isFromCache ?? this.isFromCache,
+      cacheStamp: clearCacheStamp ? null : (cacheStamp ?? this.cacheStamp),
     );
   }
 
   @override
-  List<Object?> get props => [bookings, status, failure, cancellingId];
+  List<Object?> get props => [
+        bookings,
+        status,
+        failure,
+        cancellingId,
+        isFromCache,
+        cacheStamp,
+      ];
 }

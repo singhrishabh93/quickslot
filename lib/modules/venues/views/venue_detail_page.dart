@@ -12,6 +12,7 @@ import 'package:swades_hackathon_app/modules/venues/cubit/venue_detail_cubit.dar
 import 'package:swades_hackathon_app/modules/venues/cubit/venue_detail_state.dart';
 import 'package:swades_hackathon_app/modules/venues/widgets/date_chips_row.dart';
 import 'package:swades_hackathon_app/modules/venues/widgets/slot_grid.dart';
+import 'package:swades_hackathon_app/modules/venues/widgets/time_filter_row.dart';
 import 'package:swades_hackathon_app/modules/venues/widgets/venue_header.dart';
 
 @RoutePage()
@@ -94,8 +95,14 @@ class _VenueDetailView extends StatelessWidget {
                     ),
                   ),
                 ),
+                SliverToBoxAdapter(
+                  child: TimeFilterRow(
+                    selected: state.filter,
+                    onChanged: cubit.changeFilter,
+                  ),
+                ),
                 SliverPadding(
-                  padding: const EdgeInsets.fromLTRB(20, 16, 20, 32),
+                  padding: const EdgeInsets.fromLTRB(20, 8, 20, 32),
                   sliver: SliverToBoxAdapter(
                     child: _SlotsArea(state: state, onTap: _onSlotTap),
                   ),
@@ -119,14 +126,18 @@ class _SlotsArea extends StatelessWidget {
   Widget build(BuildContext context) {
     return switch (state.status) {
       SlotsStatus.initial || SlotsStatus.loading => const _SlotGridSkeleton(),
-      SlotsStatus.success => state.slots.isEmpty
-          ? const EmptyView(
-              numeral: '00',
-              label: 'No slots',
-              caption: 'No hours available for this date.',
+      SlotsStatus.success => state.visibleSlots.isEmpty
+          ? EmptyView(
+              numeral: state.slots.isEmpty ? '00' : '—',
+              label: state.slots.isEmpty
+                  ? 'No slots'
+                  : 'Nothing in ${state.filter.label.toLowerCase()}',
+              caption: state.slots.isEmpty
+                  ? 'No hours available for this date.'
+                  : 'Try a different filter or pick another date.',
             )
           : SlotGrid(
-              slots: state.slots,
+              slots: state.visibleSlots,
               onSlotTap: (slot) => onTap(context, slot),
             ),
       SlotsStatus.error => ErrorView(

@@ -38,6 +38,11 @@ class VenueDetailCubit extends Cubit<VenueDetailState> {
 
   Future<void> refresh() => _fetchSlots();
 
+  void changeFilter(TimeOfDayFilter filter) {
+    if (filter == state.filter) return;
+    emit(state.copyWith(filter: filter));
+  }
+
   void _subscribeToRealtime() {
     _eventsSub?.cancel();
     _eventsSub = _events.watchVenue(state.venue.id).listen(_onEvent);

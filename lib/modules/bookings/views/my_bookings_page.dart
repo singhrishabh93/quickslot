@@ -8,6 +8,7 @@ import 'package:swades_hackathon_app/data/di/service_locator.dart';
 import 'package:swades_hackathon_app/data/models/booking.dart';
 import 'package:swades_hackathon_app/modules/bookings/cubit/my_bookings_cubit.dart';
 import 'package:swades_hackathon_app/modules/bookings/cubit/my_bookings_state.dart';
+import 'package:intl/intl.dart';
 import 'package:swades_hackathon_app/modules/bookings/widgets/booking_tile.dart';
 
 @RoutePage()
@@ -97,7 +98,9 @@ class _MyBookingsView extends StatelessWidget {
                             height: 1,
                           ),
                         ),
-                        const SizedBox(height: 24),
+                        const SizedBox(height: 16),
+                        if (state.isFromCache) _OfflineBanner(stamp: state.cacheStamp),
+                        const SizedBox(height: 8),
                       ],
                     ),
                   ),
@@ -160,6 +163,43 @@ class _MyBookingsView extends StatelessWidget {
           ),
         ),
     };
+  }
+}
+
+class _OfflineBanner extends StatelessWidget {
+  const _OfflineBanner({required this.stamp});
+
+  final DateTime? stamp;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final stampStr = stamp == null
+        ? ''
+        : ' · LAST SYNC ${DateFormat('d MMM, HH:mm').format(stamp!.toLocal()).toUpperCase()}';
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      decoration: BoxDecoration(
+        border: Border.all(color: AppColors.clay, width: 1),
+        color: AppColors.clayWash,
+      ),
+      child: Row(
+        children: [
+          const Icon(Icons.cloud_off_outlined,
+              size: 16, color: AppColors.clay),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              'OFFLINE · CACHED VIEW$stampStr',
+              style: theme.textTheme.labelSmall?.copyWith(
+                color: AppColors.clay,
+                letterSpacing: 1.4,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }
 
