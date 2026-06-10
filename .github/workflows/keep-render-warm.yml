@@ -1,0 +1,22 @@
+name: keep-render-warm
+
+# Render free tier sleeps after 15 min idle. Ping /health every ~10 min so the
+# instance stays warm for judges. Manual trigger available for cold-start tests.
+on:
+  schedule:
+    - cron: "*/10 * * * *"
+  workflow_dispatch:
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - name: Hit /health
+        run: |
+          response=$(curl -s -o /tmp/body -w "%{http_code}" \
+            --max-time 90 \
+            https://quickslot-api.onrender.com/health)
+          echo "HTTP $response"
+          cat /tmp/body
+          test "$response" = "200"

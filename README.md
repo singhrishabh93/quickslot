@@ -21,9 +21,7 @@ Render free tier sleeps after 15 min idle — first request may take ~50s.
 
 ## Walkthrough
 
-[![Watch the walkthrough](https://cdn.loom.com/sessions/thumbnails/4f69835d3fc8402b95186fa2c3d3595a-with-play.gif)](https://www.loom.com/share/4f69835d3fc8402b95186fa2c3d3595a)
-
-5-minute Loom: core flow → concurrency proof (the 20-parallel-curl race) → schema + 3-line handler → Realtime tile-flip → bonuses + scope decisions.
+▶ **[Watch the 5-min walkthrough on Loom](https://www.loom.com/share/4f69835d3fc8402b95186fa2c3d3595a)**
 
 ---
 
