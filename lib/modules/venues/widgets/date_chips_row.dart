@@ -20,10 +20,10 @@ class DateChipsRow extends StatelessWidget {
       return DateTime(today.year, today.month, today.day + i);
     });
     return SizedBox(
-      height: 72,
+      height: 92,
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
         itemCount: days.length,
         separatorBuilder: (_, _) => const SizedBox(width: 8),
         itemBuilder: (_, i) {

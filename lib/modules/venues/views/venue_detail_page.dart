@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:swades_hackathon_app/data/di/service_locator.dart';
 import 'package:swades_hackathon_app/data/models/slot.dart';
 import 'package:swades_hackathon_app/data/models/venue.dart';
+import 'package:swades_hackathon_app/modules/bookings/widgets/confirm_booking_sheet.dart';
 import 'package:swades_hackathon_app/modules/venues/cubit/venue_detail_cubit.dart';
 import 'package:swades_hackathon_app/modules/venues/cubit/venue_detail_state.dart';
 import 'package:swades_hackathon_app/modules/venues/widgets/date_chips_row.dart';
@@ -30,14 +31,41 @@ class _VenueDetailView extends StatelessWidget {
 
   final Venue venue;
 
-  void _onSlotTap(BuildContext context, Slot slot) {
+  Future<void> _onSlotTap(BuildContext context, Slot slot) async {
     if (slot.isBooked) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Will open booking sheet in F9 · ${slot.displayRange}'),
-        duration: const Duration(seconds: 1),
-      ),
+    final detailCubit = context.read<VenueDetailCubit>();
+
+    final result = await showModalBottomSheet<BookingSheetResult>(
+      context: context,
+      isScrollControlled: true,
+      showDragHandle: true,
+      builder: (_) => ConfirmBookingSheet(venue: venue, slot: slot),
     );
+
+    if (!context.mounted) return;
+    final messenger = ScaffoldMessenger.of(context);
+
+    switch (result) {
+      case BookingSheetResult.success:
+        messenger.showSnackBar(
+          const SnackBar(content: Text('Booking confirmed')),
+        );
+        await detailCubit.refresh();
+      case BookingSheetResult.slotTaken:
+        messenger.showSnackBar(
+          const SnackBar(
+            content: Text('This slot was just taken by someone else.'),
+          ),
+        );
+        await detailCubit.refresh();
+      case BookingSheetResult.failed:
+        messenger.showSnackBar(
+          const SnackBar(content: Text('Booking failed. Please try again.')),
+        );
+      case BookingSheetResult.cancelled:
+      case null:
+        break;
+    }
   }
 
   @override
@@ -80,7 +108,7 @@ class _SlotsArea extends StatelessWidget {
   const _SlotsArea({required this.state, required this.onTap});
 
   final VenueDetailState state;
-  final void Function(BuildContext, Slot) onTap;
+  final Future<void> Function(BuildContext, Slot) onTap;
 
   @override
   Widget build(BuildContext context) {
@@ -142,9 +170,9 @@ class _DateChipsDelegate extends SliverPersistentHeaderDelegate {
   final Widget child;
 
   @override
-  double get minExtent => 72;
+  double get minExtent => 92;
   @override
-  double get maxExtent => 72;
+  double get maxExtent => 92;
 
   @override
   Widget build(BuildContext context, double shrinkOffset, bool overlapsContent) {
