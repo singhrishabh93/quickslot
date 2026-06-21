@@ -4,6 +4,7 @@ import 'package:swades_hackathon_app/app/view/app.dart';
 import 'package:swades_hackathon_app/bootstrap.dart';
 import 'package:swades_hackathon_app/data/di/service_locator.dart';
 import 'package:swades_hackathon_app/data/network/supabase_config.dart';
+import 'package:swades_hackathon_app/modules/sdui/views/sdui_screen_view.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -16,5 +17,6 @@ Future<void> main() async {
   }
 
   await setupServiceLocator();
+  registerSduiModalBuilder();
   await bootstrap(() => const App());
 }

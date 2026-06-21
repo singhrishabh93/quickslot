@@ -1,6 +1,5 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
-import 'package:swades_hackathon_app/data/models/venue.dart';
 import 'package:swades_hackathon_app/modules/bookings/views/my_bookings_page.dart';
 import 'package:swades_hackathon_app/modules/login/views/login_page.dart';
 import 'package:swades_hackathon_app/modules/venues/views/venue_detail_page.dart';

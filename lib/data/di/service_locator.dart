@@ -5,7 +5,6 @@ import 'package:swades_hackathon_app/data/di/cubit_locator.dart';
 import 'package:swades_hackathon_app/data/di/repository_locator.dart';
 import 'package:swades_hackathon_app/data/local/bookings_cache.dart';
 import 'package:swades_hackathon_app/data/local/session_storage.dart';
-import 'package:swades_hackathon_app/data/network/booking_events_service.dart';
 import 'package:swades_hackathon_app/data/network/dio_client.dart';
 import 'package:swades_hackathon_app/router/app_router.dart';
 
@@ -21,8 +20,7 @@ Future<void> setupServiceLocator() async {
     ..registerLazySingleton<BookingsCache>(() => BookingsCache(getIt()))
     ..registerLazySingleton<DioClient>(
       () => DioClient(sessionStorage: getIt()),
-    )
-    ..registerLazySingleton<BookingEventsService>(BookingEventsService.new);
+    );
 
   setupApiLocator(getIt);
   setupRepositoryLocator(getIt);
